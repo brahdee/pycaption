@@ -10,11 +10,11 @@
 
 ### Base Gif 
 **gifs/silence.gif**\
-<img src="gifs/silence.gif" height="100">
+<img src="gifs/silence.gif" width="180">
 
 ---
 
-### Captioning <img src="gifs/hello.gif" align="right" height="150">
+### Captioning <img src="gifs/hello.gif" align="right" width="180">
 
 `poetry run python3 pycaption -i gifs/silence.gif -o gifs/hello.gif -c hello there! 🙂`
 
@@ -31,7 +31,7 @@ caption_gif("gifs/silence.gif", "hello there! 🙂", "gifs/hello.gif")
 
 ---
 
-### Uncaptioning <img src="gifs/silence_again.gif" align="right" height="100">
+### Uncaptioning <img src="gifs/silence_again.gif" align="right" width="200">
 
 `poetry run python3 pycaption -i gifs/silence.gif -o gifs/silence_again.gif -u`
 
@@ -47,7 +47,7 @@ uncaption_gif("gifs/silence.gif", "gifs/hello.gif")
 
 ## Installation and Usage
 
-If running from anything other than docker, you may need to install [ImageMagick](https://imagemagick.org/script/download.php) or have the `magick` binary in your `$PATH`.
+> **If running from anything other than docker, you may need to install [ImageMagick](https://imagemagick.org/script/download.php) or have the `magick` binary in your `$PATH`.**
 
 ### Via pip: 
 `pip install pycaption`
@@ -57,17 +57,19 @@ If running from anything other than docker, you may need to install [ImageMagick
 ### Manual installation:
 
 You can `git clone` this repo and either:
-- Use [python-poetry](https://python-poetry.org/), `poetry install`, and then `poetry run python3 pycaption ...`\
-or,
-- Use [docker](https://www.docker.com/), `docker build . -t pycaption`, and then `docker run -v $PWD/gifs:/pycaption/gifs pycaption ... -o gifs/...`
+- Use [python-poetry](https://python-poetry.org/):
+    - `poetry install`
+    - `poetry run python3 pycaption ...`
+
+- Use [docker](https://www.docker.com/):
+    - `docker build . -t pycaption`
+    - `docker run -v $PWD/gifs:/pycaption/gifs pycaption -i gifs/... -o gifs/... ...`
 
 #### Options:
 - `--input | -i [file]` - the path of the gif to use for captioning / uncaptioning
 - `--caption | -c [caption ...]` - the text to use for the caption (not needed if using `--uncaption`)
-- (optional) `--uncaption | -u` - uncaption the gif instead of captioning it
-- (optional) `--output | -o [file]` - the output path of the final result
-
-<br>
+- `--uncaption | -u` (optional) - uncaption the gif instead of captioning it
+- `--output | -o [file]` (optional) - the output path of the final result
 
 ---
 
