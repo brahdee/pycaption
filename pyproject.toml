@@ -1,0 +1,21 @@
+[tool.poetry]
+name = "pycaption"
+version = "0.1.0"
+description = "Caption gifs in python"
+authors = ["Braddy Peralta <braddy@peralta.sh>"]
+license = "LICENSE"
+readme = "README.md"
+package-mode = true
+
+[tool.poetry.dependencies]
+python = "^3.12"
+pillow = "^11.1.0"
+pilmoji = { git = "https://github.com/jay3332/pilmoji" }
+opencv-python-headless = "^4.11.0.86"
+
+[tool.poetry.group.dev.dependencies]
+black = "^25.1.0"
+
+[build-system]
+requires = ["poetry-core"]
+build-backend = "poetry.core.masonry.api"
