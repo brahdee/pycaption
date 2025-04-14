@@ -34,7 +34,7 @@ caption_gif("gifs/silence.gif", "hello there! 🙂", "gifs/hello.gif")
 
 ### Un-captioning <img src="gifs/silence_again.gif" align="right" width="200">
 
-`poetry run python3 pycaption -i gifs/silence.gif -o gifs/silence_again.gif -u`
+`poetry run python3 pycaption -i gifs/hello.gif -o gifs/silence_again.gif -u`
 
 (**gifs/hello.gif** -> **gifs/silence_again.gif**)
 
@@ -43,7 +43,7 @@ or
 ```py
 from pycaption.caption import uncaption_gif
 
-uncaption_gif("gifs/silence.gif", "gifs/hello.gif")
+uncaption_gif("gifs/hello.gif", "gifs/silence_again.gif")
 ```
 
 ## Installation and Usage
