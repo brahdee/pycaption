@@ -1,11 +1,12 @@
-from PIL import ImageFont, Image
+from PIL import Image
 from tempfile import TemporaryDirectory
 from subprocess import Popen, PIPE
 from io import BytesIO
 from pilmoji import Pilmoji
+from pilmoji.core import ImageFont
 from shlex import split
+from math import floor
 
-import textwrap
 import numpy
 import os
 import cv2
@@ -17,7 +18,9 @@ BLACK = (0, 0, 0)
 
 class EditGif:
     def __init__(self, gif_path: str, output_path: str = None):
-        self.filename = os.path.basename(gif_path.removesuffix(".gif"))
+        self.full_filename = os.path.basename(gif_path)
+        self.filename = self.full_filename.split(".")[0]
+        self.extension = self.full_filename.split(".")[-1]
         self.filepath = gif_path
 
         self.file = Image.open(gif_path)
@@ -28,6 +31,18 @@ class EditGif:
         self.i = 0
 
         self.output = output_path
+
+    def _update_progress(self):
+        """progress bar that updates on each frame completed"""
+        percent = floor(((self.i + 1) / self.file.n_frames) * 100)
+        num_full_bars = floor(percent / 10)
+
+        bar = ("❚" * num_full_bars) + (" " * (10 - num_full_bars))
+
+        print(
+            f"[{bar}] {percent}%",
+            end=("\r" if percent != 100 else " - done! saving...\n"),
+        )
 
     def _next_frame(self):
         """seeks to the next frame in the gif"""
@@ -66,12 +81,69 @@ class EditGif:
         if self.output:
             out = self.output
         else:
-            out = f"{self.filename}_{prefix}.gif"
+            out = f"{self.filename}_{prefix}.{self.extension}"
 
         with open(out, "wb") as f:
             f.write(result.read())
 
         return (result, out, "image/gif")
+
+    def _wrap_text(self, font: ImageFont.FreeTypeFont, text: str) -> str:
+        """wraps text to fit in a caption"""
+        available_width = self.file.size[0] - (self.file.size[0] // 12)
+        pre_wrap_lines = text.splitlines()
+        wrapped_lines = []
+
+        i = 0
+        while i < len(pre_wrap_lines):
+            line = pre_wrap_lines[i]
+            words = line.split(" ")
+            current_line = ""
+            word_index = 0
+
+            while word_index < len(words):
+                test_line = (current_line + " " + words[word_index]).strip()
+                line_width = font.getlength(test_line)
+
+                # compare rendered width with available width
+                if line_width <= available_width:
+                    current_line = test_line
+                    word_index += 1
+                else:
+                    # splitting long words by character
+                    if current_line == "":
+                        long_word = words[word_index]
+                        split_index = 0
+                        partial = ""
+
+                        for j, char in enumerate(long_word):
+                            test_partial = partial + char
+
+                            if font.getlength(test_partial + "-") > available_width:
+                                break
+
+                            partial = test_partial
+                            split_index = j
+
+                        if split_index == 0:
+                            split_index = 1
+                            partial = long_word[:1]
+
+                        current_line = partial + "-"
+                        words[word_index] = long_word[split_index + 1 :]
+                    else:
+                        break
+
+            wrapped_lines.append(current_line.strip())
+
+            remaining = " ".join(words[word_index:])
+
+            if remaining:
+                pre_wrap_lines.insert(i + 1, remaining)
+
+            i += 1
+
+        return "\n".join(wrapped_lines)
 
     def _create_caption_image(self, text: str):
         """creates the caption image (white background with black text)"""
@@ -80,19 +152,17 @@ class EditGif:
         spacing = width // 40
         font_size = width // 12
         emoji_scale = 1.2
-        emoji_offset = (int(width // 180), int(width // -70))
+        emoji_offset = (0, -(font_size // 6))
 
         # replace ellipsis characters
         text = text.replace("…", "...")
 
-        # wrap caption text
-        caption = "\n".join(
-            textwrap.wrap(text, 21, replace_whitespace=False, drop_whitespace=False)
-        )
-
         font = ImageFont.truetype(
             FONT_PATH, font_size, layout_engine=ImageFont.Layout.RAQM
         )
+
+        # wrap caption text
+        caption = self._wrap_text(font, text)
 
         # get the size of the rendered text
         with Pilmoji(Image.new("RGB", (1, 1), WHITE)) as pilmoji:
@@ -149,6 +219,8 @@ class EditGif:
 
     def caption(self, text: str):
         """captions the gif"""
+        print(f"Captioning {self.filename}.{self.extension} ...")
+
         caption = self._create_caption_image(text)
 
         for self.i in range(self.file.n_frames):
@@ -164,12 +236,15 @@ class EditGif:
             captioned_frame.paste(self.new_frame, (0, caption.height))
 
             self._append_frame(captioned_frame)
+            self._update_progress()
 
         result = self._save("captioned")
         return result
 
     def uncaption(self):
         """removes captions from the gif"""
+        print(f"Un-captioning {self.filename}.{self.extension} ...")
+
         self._next_frame()
         bounds = self._get_content_bounds(self.new_frame)
 
@@ -177,6 +252,7 @@ class EditGif:
             self._next_frame()
             cropped_frame = self.new_frame.crop(bounds)
             self._append_frame(cropped_frame)
+            self._update_progress()
 
         result = self._save("uncaptioned")
         return result
