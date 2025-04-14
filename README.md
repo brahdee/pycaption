@@ -76,7 +76,7 @@ You can `git clone` this repo and either:
 
 ## More Examples
 
-<img src="https://i.imgur.com/hM8Vtw1.gif" width="200"> <img src="https://i.imgur.com/cXJiUKU.gif" width="200">
+<img src="https://github.com/user-attachments/assets/a17e87b1-fbdb-482f-bbcd-e42818ccabc6" width="200"> <img src="https://i.imgur.com/cXJiUKU.gif" width="200">
 
 ## Known Issues
 1. **Emojis sometimes display incorrectly** (don't respond well to text wrapping or line spacing), so it's best not to include them in your prompt for now
